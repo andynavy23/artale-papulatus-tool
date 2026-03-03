@@ -2,22 +2,23 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>Artale 困難拉圖斯 - 輔助工具</title>
+    <title>Artale 困難拉圖斯 - 輔助工具 (修正坐標版)</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         body { font-family: sans-serif; background: #121212; color: #eee; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         .sidebar { width: 360px; background: #1e1e1e; border-right: 1px solid #333; padding: 15px; display: flex; flex-direction: column; overflow-y: auto; }
-        .main-content { flex: 1; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
-        .monitor-card { background: #2c2c2c; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #444; transition: transform 0.2s ease; /* 滑鼠移上去的動畫 */ }
-        .monitor-card:hover { transform: translateY(-2px); border-color: #e870d0; /* 懸停時邊框變色 */}
-        .guild-title { font-size: 0.95rem; font-weight: 600; letter-spacing: 1.5px; /* 增加字距讓文字看起來更高檔 *//* 漸層文字效果 */background: linear-gradient(45deg, #e870d0, #ff9cdb); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;/* 文字發光感 */filter: drop-shadow(0 0 5px rgba(232, 112, 208, 0.4)); display: flex; align-items: center; }
-        /* 可以在文字前加個小圖標裝飾 */
+        .main-content { flex: 1; position: relative; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 10px; }
+        .safe-spot-header { width: 95%; background: rgba(148, 232, 112, 0.15); border-left: 4px solid #92e870; padding: 8px 15px; margin-bottom: 5px; font-weight: bold; color: #aeff9c; letter-spacing: 1px; display: flex; align-items: center; justify-content: space-between; }
+        .safe-spot-header-2 { width: 95%; background: rgba(112, 138, 232, 0.15); border-left: 4px solid #7080e8; padding: 8px 15px; margin-bottom: 5px; font-weight: bold; color: #9ca8ff; letter-spacing: 1px; display: flex; align-items: center; justify-content: space-between; }
+        #img-container { width: 95%; display: flex; justify-content: center; margin-bottom: 15px; border: 1px solid #333; border-radius: 4px; background: #1a1a1a; overflow: hidden; }
+        #main-img { max-width: 100%; max-height: 20vh; object-fit: contain; display: block; }
+        .monitor-card { background: #2c2c2c; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #444; transition: transform 0.2s ease; }
+        .monitor-card:hover { transform: translateY(-2px); border-color: #e870d0; }
+        .guild-title { font-size: 0.95rem; font-weight: 600; letter-spacing: 1.5px; background: linear-gradient(45deg, #e870d0, #ff9cdb); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 5px rgba(232, 112, 208, 0.4)); display: flex; align-items: center; }
         .guild-title::before { content: "✦"; margin-right: 8px; font-size: 0.8rem; color: #e870d0; }
         .val { font-size: 2.2rem; font-weight: bold; color: #40c057; text-align: center; }
-        #img-container { position: relative; display: inline-block; }
-        #main-img { max-width: 100%; max-height: 15vh; display: block; }
-        #video-container { position: relative; display: inline-block; }
-        #main-video { max-width: 100%; max-height: 85vh; display: block; }
+        #video-container { position: relative; display: inline-block; /* 移除固定的 width: 95%，讓容器貼合影片 */ }
+        #main-video { max-width: 100%; max-height: 65vh; display: block; background: #000; }
         .roi-box { position: absolute; border: 2px solid #fff; box-sizing: border-box; cursor: move; min-width: 30px; min-height: 20px; z-index: 1000; }
         .roi-box::after { content: attr(data-label); position: absolute; top: -22px; left: 0; background: rgba(0,0,0,0.8); font-size: 11px; padding: 2px 6px; white-space: nowrap; border-radius: 3px; }
         .resizer { width: 14px; height: 14px; background: white; position: absolute; right: -7px; bottom: -7px; cursor: nwse-resize; border-radius: 50%; border: 2px solid #000; z-index: 1001; }
@@ -38,47 +39,46 @@
     <div class="monitor-card">
         <div class="guild-title">aespaaa 公會製作</div>
     </div>
-
     <div class="monitor-card">
         <div style="font-size: 0.8rem; color: #aaa;">血量偵測 (HP %)</div>
         <div id="hp-display" class="val">-- %</div>
-        <div id="hp-dev-msg" style="color: #ffd43b; font-weight: bold; text-align: left; min-height: 15rem; font-size: 0.9rem;"></div>
+        <div id="hp-dev-msg" style="color: #ffd43b; font-weight: bold; text-align: left; min-height: 15rem; font-size: 0.9rem; white-space: pre-wrap;"></div>
         <input type="range" min="0" max="100" value="100" style="width:100%" oninput="manualHPAdjust(this.value)">
     </div>
-
     <div class="monitor-card">
         <div style="font-size: 0.8rem; color: #aaa;">黑水倒數計時器</div>
         <div id="crack-timer" class="val">READY</div>
         <div style="display: flex; gap: 5px; align-items: center;">
             <select id="crack-duration" style="background:#444; color:white; border:none; flex: 1; height: 2rem;">
-                <option value="60">60s</option>
-                <option value="65">65s</option>
-                <option value="70" selected>70s</option>
-                <option value="75">75s</option>
-                <option value="80">80s</option>
+                <option value="60">60s</option><option value="65">65s</option>
+                <option value="70" selected>70s</option><option value="75">75s</option><option value="80">80s</option>
             </select>
             <button class="btn-reset" style="flex: 1;" onclick="resetCrackTimer()">重置計時</button>
         </div>
         <button class="btn-manual" onclick="triggerCrack('手動', true)">手動 / 立即重置計時</button>
         <div id="ocr-crack-raw" style="font-size: 10px; color: #ffd43b; min-height: 3rem; text-align: center; margin-top:5px;">偵測內容：等待中...</div>
     </div>
-
     <button class="btn-primary" onclick="initCapture()">連結 遊戲畫面</button>
     <button class="btn-save" onclick="saveSettings()">💾 儲存 偵測框 位置設定</button>
-
     <div style="margin-top:10px;">
         <div style="font-size: 0.8rem; color: #aaa;">血量 偵測框 預覽</div>
         <canvas id="hp-debug" class="debug-canvas"></canvas>
         <div style="font-size: 0.8rem; color: #aaa;">黑水 偵測框 預覽</div>
         <canvas id="crack-debug" class="debug-canvas"></canvas>
     </div>
-    <div style="font-size: 0.8rem; color: #aaa;">紀錄日誌</div>
     <div class="log" id="sys-log">系統：準備就緒。</div>
 </div>
 
 <div class="main-content">
+    <div class="safe-spot-header">
+        <span>安全點位置參考圖</span>
+        <span style="font-size: 0.7rem; opacity: 0.7;">(HP 49% 以下適用)</span>
+    </div>
     <div id="img-container">
-        <img id="main-img" src="./安全點位置.png">
+        <img id="main-img" src="./安全點位置.png" alt="安全點位置圖請確認路徑正確">
+    </div>
+    <div class="safe-spot-header-2">
+        <span>遊戲畫面</span>
     </div>
     <div id="video-container">
         <video id="main-video" autoplay muted></video>
@@ -94,7 +94,6 @@
     const hpCtx = hpDbg.getContext('2d', {willReadFrequently: true});
     const crackCtx = crackDbg.getContext('2d', {willReadFrequently: true});
 
-    // 設定僅讀取座標
     let config = JSON.parse(localStorage.getItem('artale_v7_config')) || {
         hp: { top: 50, left: 100, width: 120, height: 35 },
         crack: { top: 400, left: 200, width: 250, height: 60 }
@@ -104,13 +103,11 @@
     let isHpBusy = false, isCrackBusy = false;
     let lastCrackTrigger = 0, crackItv, isManualHP = false;
 
-    // ==========================================================
-    // 開發者自訂區域 - 血量邏輯判斷
-    // ==========================================================
+    // --- [邏輯保留] ---
     function checkHPLogic(percent) {
         const msgEl = document.getElementById('hp-dev-msg');
         const p = parseInt(percent);
-
+        if (isNaN(p)) return;
         // 在這裡撰寫您的判斷條件
         if (p <= 19) {
             msgEl.innerText = "HP <= 19%";
@@ -158,20 +155,13 @@
         }
     }
 
-    // ==========================================================
-    // 開發者自訂區域 - 黑水關鍵字判斷
-    // ==========================================================
     function checkCrackKeywords(rawText) {
         const text = rawText.toLowerCase();
-
-        // 如果偵測到的文字包含以下關鍵字，即觸發倒數
-        // 當需要修改辨識內容時，請修改或增加 includes 中的字串
         const keywords = ["watch", "step", "your", "注意你的", "你的腳下", "腳下"];
-
         return keywords.some(key => text.includes(key));
     }
-    // ==========================================================
 
+    // --- [修正拖曳與縮放的座標系統] ---
     function setupDraggable(id) {
         const el = document.getElementById(id);
         let m = false, r = false, sx, sy, sw, sh, sl, st;
@@ -181,6 +171,7 @@
             sw = el.offsetWidth; sh = el.offsetHeight;
             sl = el.offsetLeft; st = el.offsetTop;
             e.stopPropagation();
+            e.preventDefault();
         };
         document.addEventListener('mousemove', (e) => {
             if (m) { el.style.left = (sl + (e.clientX - sx)) + 'px'; el.style.top = (st + (e.clientY - sy)) + 'px'; }
@@ -192,39 +183,51 @@
     window.onload = async () => {
         applyUI();
         setupDraggable('hp-roi'); setupDraggable('crack-roi');
-        hpWorker = await Tesseract.createWorker('eng');
-        crackWorker = await Tesseract.createWorker('eng+chi_tra');
-        addLog("OCR 引擎載入完成。");
+        try {
+            hpWorker = await Tesseract.createWorker('eng');
+            crackWorker = await Tesseract.createWorker('eng+chi_tra');
+            addLog("OCR 引擎載入完成。");
+        } catch (err) { addLog("OCR 載入失敗。"); }
     };
 
     async function initCapture() {
         try {
-            video.srcObject = await navigator.mediaDevices.getDisplayMedia({ video: true });
+            video.srcObject = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
             analyzeLoop();
-        } catch (e) { addLog("連結視窗取消。"); }
+        } catch (e) { addLog("連結取消。"); }
     }
 
     function analyzeLoop() {
         if (video.paused || video.ended || video.videoWidth === 0) {
             requestAnimationFrame(analyzeLoop); return;
         }
-        const scale = video.videoWidth / video.offsetWidth;
+
+        // --- [核心修復：計算影像比例與偏移] ---
+        const rect = video.getBoundingClientRect();
+        const scaleX = video.videoWidth / rect.width;
+        const scaleY = video.videoHeight / rect.height;
 
         if (!isHpBusy && hpWorker) {
-            captureROI(document.getElementById('hp-roi'), hpCtx, hpDbg, scale);
+            captureROI(document.getElementById('hp-roi'), hpCtx, hpDbg, scaleX, scaleY);
             processHpOCR();
         }
         if (!isCrackBusy && crackWorker) {
-            captureROI(document.getElementById('crack-roi'), crackCtx, crackDbg, scale);
+            captureROI(document.getElementById('crack-roi'), crackCtx, crackDbg, scaleX, scaleY);
             processCrackOCR();
         }
         requestAnimationFrame(analyzeLoop);
     }
 
-    function captureROI(el, ctx, canvas, scale) {
-        const w = el.offsetWidth * scale, h = el.offsetHeight * scale;
+    function captureROI(el, ctx, canvas, scaleX, scaleY) {
+        const w = el.offsetWidth * scaleX;
+        const h = el.offsetHeight * scaleY;
+        const x = el.offsetLeft * scaleX;
+        const y = el.offsetTop * scaleY;
+
+        if (w < 1 || h < 1) return;
         canvas.width = w; canvas.height = h;
-        ctx.drawImage(video, el.offsetLeft * scale, el.offsetTop * scale, w, h, 0, 0, w, h);
+        // 使用計算後的比例與坐標進行擷取
+        ctx.drawImage(video, x, y, w, h, 0, 0, w, h);
     }
 
     async function processHpOCR() {
@@ -244,9 +247,7 @@
             const raw = text.trim();
             if (raw.length > 0) {
                 document.getElementById('ocr-crack-raw').innerText = "偵測內容：" + raw;
-                if (checkCrackKeywords(raw)) {
-                    triggerCrack("自動偵測", false);
-                }
+                if (checkCrackKeywords(raw)) triggerCrack("自動偵測", false);
             }
         } catch (e) {}
         isCrackBusy = false;
@@ -254,9 +255,7 @@
 
     function triggerCrack(src, force) {
         const now = Date.now();
-        // 如果是手動觸發，忽略 15 秒冷卻時間
         if (!force && (now - lastCrackTrigger < 15000)) return;
-
         lastCrackTrigger = now;
         clearInterval(crackItv);
         const dur = parseInt(document.getElementById('crack-duration').value);
@@ -264,7 +263,6 @@
         const el = document.getElementById('crack-timer');
         el.style.color = "#fa5252";
         addLog(`[${src}] 啟動 ${dur}s 倒數。`);
-
         crackItv = setInterval(() => {
             s--; el.innerText = s + "s";
             if (s <= 0) {
@@ -278,12 +276,12 @@
         clearInterval(crackItv);
         document.getElementById('crack-timer').innerText = "READY";
         document.getElementById('crack-timer').style.color = "#40c057";
-        addLog("黑水倒數已重置並停止。");
+        addLog("倒數重置。");
     }
 
     function updateHPUI(p) {
         document.getElementById('hp-display').innerText = p + "%";
-        checkHPLogic(p); // 執行開發者自訂邏輯
+        checkHPLogic(p);
     }
 
     function manualHPAdjust(val) {
@@ -303,11 +301,15 @@
     function saveSettings() {
         ['hp', 'crack'].forEach(k => {
             const el = document.getElementById(k + '-roi');
-            config[k] = { top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth, height: el.offsetHeight };
+            config[k] = {
+                top: parseInt(el.style.top),
+                left: parseInt(el.style.left),
+                width: el.offsetWidth,
+                height: el.offsetHeight
+            };
         });
-        // 僅儲存座標設定，不儲存警示文字內容
         localStorage.setItem('artale_v7_config', JSON.stringify(config));
-        addLog("框位設定儲存成功。");
+        addLog("座標儲存成功。");
     }
 
     function addLog(m) {
@@ -315,7 +317,11 @@
         l.innerHTML += `<br>[${new Date().toLocaleTimeString()}] ${m}`;
         l.scrollTop = l.scrollHeight;
     }
-    function speak(t) { window.speechSynthesis.speak(new SpeechSynthesisUtterance(t)); }
+
+    function speak(t) {
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(new SpeechSynthesisUtterance(t));
+    }
 </script>
 </body>
 </html>
