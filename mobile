@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta property="og:image" content="https://andynavy23.github.io/artale-papulatus-tool/拉圖斯.png" />
+    <meta property="og:title" content="Artale 困難拉圖斯 - 輔助工具(手機版)" />
+    <meta property="og:description" content="aespaaa 公會製作, 透過分享畫面取得即時遊戲畫面, 提供相關輔助攻略資訊給玩家" />
+    <meta property="og:url" content="https://andynavy23.github.io/artale-papulatus-tool/mobile" />
+    <title>Artale 困難拉圖斯 - 輔助工具</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+TC:wght@500;700&display=swap');
+
+        :root {
+            --ms-window-bg: #ece9d8;
+            --ms-header-blue: linear-gradient(to bottom, #4c66a4, #3a518d);
+            --ms-border: #444;
+            --color-mobs: #4db34d;
+            --color-water: #4a90e2;
+            --color-system: #a362cc;
+        }
+
+        /* 防止手機雙擊縮放 */
+        * { touch-action: manipulation; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #556688; /* 經典背景色 */
+            background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+
+        /* 視窗容器 */
+        .window {
+            background: var(--ms-window-bg);
+            border: 2px solid var(--ms-border);
+            border-radius: 8px 8px 0 0;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.4);
+            width: 100%;
+            max-width: 900px;
+            overflow: hidden;
+        }
+
+        .window-header {
+            background: var(--ms-header-blue);
+            color: white;
+            padding: 8px 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--ms-border);
+        }
+
+        .guild-tag {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            font-size: 0.9rem;
+            color: #ffcc00;
+        }
+
+        /* 全域控制區 */
+        .global-settings {
+            background: #fff;
+            margin: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px inset #ccc;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* 計時器網格 */
+        .timer-grid {
+            padding: 15px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        @media (min-width: 600px) or (orientation: landscape) {
+            .timer-grid { grid-template-columns: 1fr 1fr 1fr; }
+        }
+
+        .timer-card {
+            background: #fdfdfd;
+            border: 2px solid #aaa;
+            border-radius: 6px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .timer-card.active { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+
+        .timer-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            padding: 2px 10px;
+            border-radius: 10px;
+            color: white;
+            width: 100%;
+            text-align: center;
+        }
+
+        .bg-mobs { background-color: var(--color-mobs); }
+        .bg-water { background-color: var(--color-water); }
+        .bg-system { background-color: var(--color-system); }
+
+        .settings-area {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+
+        .settings-area input {
+            width: 50px;
+            border: 1px solid #999;
+            border-radius: 3px;
+            text-align: center;
+            padding: 2px;
+        }
+
+        /* 數字顯示 */
+        .timer-display {
+            font-size: 3.5rem;
+            font-weight: 800;
+            font-family: 'Arial Black', sans-serif;
+            margin: 5px 0;
+            color: #333;
+            transition: color 0.1s;
+        }
+
+        .running-text { color: #d00; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+
+        /* 按鈕樣式 */
+        .timer-btn {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #555;
+            border-radius: 5px;
+            background: linear-gradient(to bottom, #eeeeee, #cccccc);
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: inset 1px 1px 0 #fff;
+            margin-top: 10px;
+        }
+
+        .timer-btn:active {
+            background: linear-gradient(to bottom, #bbbbbb, #dddddd);
+            box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3);
+            transform: scale(0.98);
+        }
+
+        .timer-btn.is-running {
+            background: linear-gradient(to bottom, #ff9999, #ff5555);
+            color: white;
+            border-color: #800;
+        }
+
+        .reset-btn {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            background: #999;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            margin-left: 5px;
+        }
+
+        .footer-hint {
+            text-align: center;
+            padding: 10px;
+            font-size: 0.8rem;
+            color: #555;
+            background: #ddd;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="window">
+        <div class="window-header">
+            <span>困難拉圖斯攻略助手</span>
+            <span class="guild-tag">aespaaa 公會製作</span>
+        </div>
+
+        <div class="global-settings">
+            <label style="cursor: pointer;">
+                <input type="checkbox" id="auto-restart" checked>
+                <span style="color: #000;">🕒 循環模式 (歸零後重啟)</span>
+            </label>
+        </div>
+
+        <div class="timer-grid">
+            <div class="timer-card" id="card-mobs">
+                <div class="timer-title bg-mobs">召喚小怪 (屋頂)</div>
+                <div class="settings-area">
+                    <input type="number" id="input-mobs" value="50" min="1">s
+                    <button class="reset-btn" onclick="resetSetting('mobs', 50)">設定重置</button>
+                </div>
+                <div id="display-mobs" class="timer-display">50.0</div>
+                <button class="timer-btn" id="btn-mobs" onclick="handleTimer('mobs')">開始倒數</button>
+            </div>
+
+            <div class="timer-card" id="card-water">
+                <div class="timer-title bg-water">黑水生成 (即死)</div>
+                <div class="settings-area">
+                    <input type="number" id="input-water" value="70" min="1">s
+                    <button class="reset-btn" onclick="resetSetting('water', 70)">設定重置</button>
+                </div>
+                <div id="display-water" class="timer-display">70.0</div>
+                <button class="timer-btn" id="btn-water" onclick="handleTimer('water')">開始倒數</button>
+            </div>
+
+            <div class="timer-card" id="card-system">
+                <div class="timer-title bg-system">系統扣時 (指針)</div>
+                <div class="settings-area">
+                    <input type="number" id="input-system" value="10" min="1">s
+                    <button class="reset-btn" onclick="resetSetting('system', 10)">設定重置</button>
+                </div>
+                <div id="display-system" class="timer-display">10.0</div>
+                <button class="timer-btn" id="btn-system" onclick="handleTimer('system')">開始倒數</button>
+            </div>
+        </div>
+
+        <div class="footer-hint">
+            💡 單擊：開始/暫停 | <b>快速雙擊：重置計時</b><br>
+            手機使用者請注意：本工具已優化避免雙擊縮放
+        </div>
+    </div>
+
+    <script>
+        const timers = {
+            mobs: { timeLeft: 50, interval: null, running: false, lastClick: 0 },
+            water: { timeLeft: 70, interval: null, running: false, lastClick: 0 },
+            system: { timeLeft: 10, interval: null, running: false, lastClick: 0 }
+        };
+
+        function handleTimer(id) {
+            const now = Date.now();
+            const timer = timers[id];
+            const inputVal = parseFloat(document.getElementById(`input-${id}`).value) || 10;
+
+            // 雙擊判定修正：間隔放寬至 500ms，增加易用性
+            if (now - timer.lastClick < 500) {
+                resetTimer(id, inputVal);
+                timer.lastClick = 0;
+                return;
+            }
+            timer.lastClick = now;
+
+            if (timer.running) {
+                pauseTimer(id);
+            } else {
+                startTimer(id);
+            }
+        }
+
+        function startTimer(id) {
+            const timer = timers[id];
+            const btn = document.getElementById(`btn-${id}`);
+            const display = document.getElementById(`display-${id}`);
+            const card = document.getElementById(`card-${id}`);
+
+            timer.running = true;
+            btn.classList.add('is-running');
+            btn.innerText = "倒數中 (暫停)";
+            display.classList.add('running-text');
+            card.classList.add('active');
+
+            timer.interval = setInterval(() => {
+                timer.timeLeft -= 0.1;
+
+                // 即時檢查循環模式狀態
+                const autoRestart = document.getElementById('auto-restart').checked;
+
+                if (timer.timeLeft <= 0) {
+                    if (autoRestart) {
+                        const inputVal = parseFloat(document.getElementById(`input-${id}`).value);
+                        timer.timeLeft = inputVal;
+                    } else {
+                        timer.timeLeft = 0;
+                        pauseTimer(id);
+                        btn.innerText = "已完成 (雙擊重置)";
+                    }
+                    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                }
+
+                display.innerText = Math.max(0, timer.timeLeft).toFixed(1);
+            }, 100);
+        }
+
+        function pauseTimer(id) {
+            const timer = timers[id];
+            const btn = document.getElementById(`btn-${id}`);
+            const display = document.getElementById(`display-${id}`);
+            const card = document.getElementById(`card-${id}`);
+
+            clearInterval(timer.interval);
+            timer.running = false;
+            btn.classList.remove('is-running');
+            btn.innerText = "繼續倒數";
+            display.classList.remove('running-text');
+            card.classList.remove('active');
+        }
+
+        function resetTimer(id, duration) {
+            const timer = timers[id];
+            const btn = document.getElementById(`btn-${id}`);
+            const display = document.getElementById(`display-${id}`);
+            const card = document.getElementById(`card-${id}`);
+
+            clearInterval(timer.interval);
+            timer.running = false;
+            timer.timeLeft = duration;
+
+            display.innerText = duration.toFixed(1);
+            display.classList.remove('running-text');
+            btn.innerText = "開始倒數";
+            btn.classList.remove('is-running');
+            card.classList.remove('active');
+        }
+
+        function resetSetting(id, defaultVal) {
+            document.getElementById(`input-${id}`).value = defaultVal;
+            resetTimer(id, defaultVal);
+        }
+    </script>
+</body>
+</html>
