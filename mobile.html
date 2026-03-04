@@ -25,7 +25,7 @@
 
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            background-color: #556688; /* 經典背景色 */
+            background-color: #556688; 
             background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
             margin: 0;
             padding: 15px;
@@ -35,7 +35,6 @@
             color: #333;
         }
 
-        /* 視窗容器 */
         .window {
             background: var(--ms-window-bg);
             border: 2px solid var(--ms-border);
@@ -63,7 +62,6 @@
             color: #ffcc00;
         }
 
-        /* 全域控制區 */
         .global-settings {
             background: #fff;
             margin: 10px;
@@ -74,7 +72,6 @@
             font-weight: bold;
         }
 
-        /* 計時器網格 */
         .timer-grid {
             padding: 15px;
             display: grid;
@@ -116,13 +113,34 @@
 
         .settings-area {
             display: flex;
+            flex-direction: column; /* 改為垂直排列以便放下更多控制項 */
             align-items: center;
-            gap: 5px;
+            gap: 8px;
             font-size: 0.85rem;
             margin-bottom: 10px;
+            width: 100%;
         }
 
-        .settings-area input {
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .voice-switch {
+            font-size: 0.8rem;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            cursor: pointer;
+            background: #eee;
+            padding: 2px 8px;
+            border-radius: 12px;
+            border: 1px solid #ccc;
+        }
+
+        .settings-area input[type="number"] {
             width: 50px;
             border: 1px solid #999;
             border-radius: 3px;
@@ -130,7 +148,6 @@
             padding: 2px;
         }
 
-        /* 數字顯示 */
         .timer-display {
             font-size: 3.5rem;
             font-weight: 800;
@@ -142,7 +159,6 @@
 
         .running-text { color: #d00; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
 
-        /* 按鈕樣式 */
         .timer-btn {
             width: 100%;
             padding: 12px;
@@ -174,7 +190,6 @@
             color: white;
             border: none;
             border-radius: 3px;
-            margin-left: 5px;
         }
 
         .footer-hint {
@@ -205,8 +220,13 @@
             <div class="timer-card" id="card-mobs">
                 <div class="timer-title bg-mobs">召喚小怪 (屋頂)</div>
                 <div class="settings-area">
-                    <input type="number" id="input-mobs" value="50" min="1">s
-                    <button class="reset-btn" onclick="resetSetting('mobs', 50)">設定重置</button>
+                    <div class="input-row">
+                        <input type="number" id="input-mobs" value="50" min="1">s
+                        <button class="reset-btn" onclick="resetSetting('mobs', 50)">設定重置</button>
+                    </div>
+                    <label class="voice-switch">
+                        <input type="checkbox" id="voice-mobs" checked> 🔊 語音
+                    </label>
                 </div>
                 <div id="display-mobs" class="timer-display">50.0</div>
                 <button class="timer-btn" id="btn-mobs" onclick="handleTimer('mobs')">開始倒數</button>
@@ -215,8 +235,13 @@
             <div class="timer-card" id="card-water">
                 <div class="timer-title bg-water">黑水生成 (即死)</div>
                 <div class="settings-area">
-                    <input type="number" id="input-water" value="70" min="1">s
-                    <button class="reset-btn" onclick="resetSetting('water', 70)">設定重置</button>
+                    <div class="input-row">
+                        <input type="number" id="input-water" value="70" min="1">s
+                        <button class="reset-btn" onclick="resetSetting('water', 70)">設定重置</button>
+                    </div>
+                    <label class="voice-switch">
+                        <input type="checkbox" id="voice-water" checked> 🔊 語音
+                    </label>
                 </div>
                 <div id="display-water" class="timer-display">70.0</div>
                 <button class="timer-btn" id="btn-water" onclick="handleTimer('water')">開始倒數</button>
@@ -225,8 +250,13 @@
             <div class="timer-card" id="card-system">
                 <div class="timer-title bg-system">系統扣時 (指針)</div>
                 <div class="settings-area">
-                    <input type="number" id="input-system" value="10" min="1">s
-                    <button class="reset-btn" onclick="resetSetting('system', 10)">設定重置</button>
+                    <div class="input-row">
+                        <input type="number" id="input-system" value="10" min="1">s
+                        <button class="reset-btn" onclick="resetSetting('system', 10)">設定重置</button>
+                    </div>
+                    <label class="voice-switch">
+                        <input type="checkbox" id="voice-system" checked> 🔊 語音
+                    </label>
                 </div>
                 <div id="display-system" class="timer-display">10.0</div>
                 <button class="timer-btn" id="btn-system" onclick="handleTimer('system')">開始倒數</button>
@@ -251,7 +281,6 @@
             const timer = timers[id];
             const inputVal = parseFloat(document.getElementById(`input-${id}`).value) || 10;
 
-            // 雙擊判定修正：間隔放寬至 500ms，增加易用性
             if (now - timer.lastClick < 500) {
                 resetTimer(id, inputVal);
                 timer.lastClick = 0;
@@ -281,10 +310,19 @@
             timer.interval = setInterval(() => {
                 timer.timeLeft -= 0.1;
 
-                // 即時檢查循環模式狀態
                 const autoRestart = document.getElementById('auto-restart').checked;
+                const isVoiceEnabled = document.getElementById(`voice-${id}`).checked;
 
                 if (timer.timeLeft <= 0) {
+                    // 語音播放判斷：只有在開關開啟時才說話
+                    if (isVoiceEnabled) {
+                        if (id == "mobs") speak("召喚小怪");
+                        else if (id == "water") speak("黑水");
+                        else if (id == "system") speak("系統扣時");
+                    }
+
+                    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
                     if (autoRestart) {
                         const inputVal = parseFloat(document.getElementById(`input-${id}`).value);
                         timer.timeLeft = inputVal;
@@ -293,7 +331,6 @@
                         pauseTimer(id);
                         btn.innerText = "已完成 (雙擊重置)";
                     }
-                    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
                 }
 
                 display.innerText = Math.max(0, timer.timeLeft).toFixed(1);
@@ -334,6 +371,17 @@
         function resetSetting(id, defaultVal) {
             document.getElementById(`input-${id}`).value = defaultVal;
             resetTimer(id, defaultVal);
+        }
+
+        function speak(text) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-TW';
+            utterance.pitch = 1;
+            utterance.rate = 1.2; // 稍微加快語速，適合戰鬥提醒
+            utterance.volume = 1;
+            window.speechSynthesis.speak(utterance);
         }
     </script>
 </body>
