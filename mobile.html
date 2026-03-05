@@ -62,16 +62,7 @@
             color: #ffcc00;
         }
 
-        .global-settings {
-            background: #fff;
-            margin: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px inset #ccc;
-            text-align: center;
-            font-weight: bold;
-        }
-
+        /* 調整計時器格線間距 */
         .timer-grid {
             padding: 15px;
             display: grid;
@@ -113,7 +104,7 @@
 
         .settings-area {
             display: flex;
-            flex-direction: column; /* 改為垂直排列以便放下更多控制項 */
+            flex-direction: column;
             align-items: center;
             gap: 8px;
             font-size: 0.85rem;
@@ -127,7 +118,15 @@
             gap: 5px;
         }
 
-        .voice-switch {
+        /* 調整開關橫向排列 */
+        .switch-row {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .voice-switch, .restart-switch {
             font-size: 0.8rem;
             color: #555;
             display: flex;
@@ -209,13 +208,6 @@
             <span class="guild-tag">aespaaa 公會製作</span>
         </div>
 
-        <div class="global-settings">
-            <label style="cursor: pointer;">
-                <input type="checkbox" id="auto-restart" checked>
-                <span style="color: #000;">🕒 循環模式 (歸零後重啟)</span>
-            </label>
-        </div>
-
         <div class="timer-grid">
             <div class="timer-card" id="card-mobs">
                 <div class="timer-title bg-mobs">召喚小怪 (屋頂)</div>
@@ -224,9 +216,14 @@
                         <input type="number" id="input-mobs" value="50" min="1">s
                         <button class="reset-btn" onclick="resetSetting('mobs', 50)">設定重置</button>
                     </div>
-                    <label class="voice-switch">
-                        <input type="checkbox" id="voice-mobs" checked> 🔊 語音
-                    </label>
+                    <div class="switch-row">
+                        <label class="voice-switch">
+                            <input type="checkbox" id="voice-mobs" checked> 🔊 語音
+                        </label>
+                        <label class="restart-switch">
+                            <input type="checkbox" id="restart-mobs" checked> 🔄 循環
+                        </label>
+                    </div>
                 </div>
                 <div id="display-mobs" class="timer-display">50.0</div>
                 <button class="timer-btn" id="btn-mobs" onclick="handleTimer('mobs')">開始倒數</button>
@@ -239,9 +236,14 @@
                         <input type="number" id="input-water" value="70" min="1">s
                         <button class="reset-btn" onclick="resetSetting('water', 70)">設定重置</button>
                     </div>
-                    <label class="voice-switch">
-                        <input type="checkbox" id="voice-water" checked> 🔊 語音
-                    </label>
+                    <div class="switch-row">
+                        <label class="voice-switch">
+                            <input type="checkbox" id="voice-water" checked> 🔊 語音
+                        </label>
+                        <label class="restart-switch">
+                            <input type="checkbox" id="restart-water" checked> 🔄 循環
+                        </label>
+                    </div>
                 </div>
                 <div id="display-water" class="timer-display">70.0</div>
                 <button class="timer-btn" id="btn-water" onclick="handleTimer('water')">開始倒數</button>
@@ -254,9 +256,14 @@
                         <input type="number" id="input-system" value="10" min="1">s
                         <button class="reset-btn" onclick="resetSetting('system', 10)">設定重置</button>
                     </div>
-                    <label class="voice-switch">
-                        <input type="checkbox" id="voice-system" checked> 🔊 語音
-                    </label>
+                    <div class="switch-row">
+                        <label class="voice-switch">
+                            <input type="checkbox" id="voice-system" checked> 🔊 語音
+                        </label>
+                        <label class="restart-switch">
+                            <input type="checkbox" id="restart-system" checked> 🔄 循環
+                        </label>
+                    </div>
                 </div>
                 <div id="display-system" class="timer-display">10.0</div>
                 <button class="timer-btn" id="btn-system" onclick="handleTimer('system')">開始倒數</button>
@@ -303,14 +310,10 @@
 
         function unlockVoice() {
             if (!('speechSynthesis' in window)) return;
-            
-            // 播放一個極短且無聲的字串來騙過 Safari 的安全機制
             const silentUtterance = new SpeechSynthesisUtterance('');
             silentUtterance.volume = 0;
             window.speechSynthesis.speak(silentUtterance);
-            
             voiceUnlocked = true;
-            console.log("Voice Unlocked for Safari");
         }
 
         function startTimer(id) {
@@ -328,11 +331,11 @@
             timer.interval = setInterval(() => {
                 timer.timeLeft -= 0.1;
 
-                const autoRestart = document.getElementById('auto-restart').checked;
+                // 改為取得個別計時器的循環開關狀態
+                const autoRestart = document.getElementById(`restart-${id}`).checked;
                 const isVoiceEnabled = document.getElementById(`voice-${id}`).checked;
 
                 if (timer.timeLeft <= 0) {
-                    // 語音播放判斷：只有在開關開啟時才說話
                     if (isVoiceEnabled) {
                         if (id == "mobs") speak("召喚小怪");
                         else if (id == "water") speak("黑水");
@@ -397,7 +400,7 @@
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'zh-TW';
             utterance.pitch = 1;
-            utterance.rate = 1.2; // 稍微加快語速，適合戰鬥提醒
+            utterance.rate = 1.2;
             utterance.volume = 1;
             setTimeout(() => {window.speechSynthesis.speak(utterance);}, 0);
         }
