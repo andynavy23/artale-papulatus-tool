@@ -20,20 +20,30 @@
             --color-system: #a362cc;
         }
 
-        /* 防止手機雙擊縮放 */
-        * { touch-action: manipulation; box-sizing: border-box; }
+        /* 防止手機雙擊縮放與意外滾動 */
+        * {
+            touch-action: manipulation;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            background-color: #556688; 
+            background-color: #556688;
             background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
             margin: 0;
-            padding: 15px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
             color: #333;
+            min-height: 100vh;
+            /* 防止下拉重新整理 */
+            overscroll-behavior: contain;
         }
+
+        /* 全螢幕狀態下的特殊樣式 */
+        :fullscreen body { padding: 5px; }
+        :-webkit-full-screen body { padding: 5px; }
 
         .window {
             background: var(--ms-window-bg);
@@ -43,12 +53,14 @@
             width: 100%;
             max-width: 900px;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .window-header {
             background: var(--ms-header-blue);
             color: white;
-            padding: 8px 15px;
+            padding: 8px 12px;
             font-weight: bold;
             display: flex;
             justify-content: space-between;
@@ -56,18 +68,37 @@
             border-bottom: 2px solid var(--ms-border);
         }
 
+        .header-left {
+            display: flex;
+            flex-direction: column;
+        }
+
         .guild-tag {
             font-family: 'ZCOOL KuaiLe', cursive;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #ffcc00;
         }
 
-        /* 調整計時器格線間距 */
+        /* 全螢幕按鈕樣式 */
+        .fullscreen-btn {
+            background: #ffcc00;
+            color: #333;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 1px 1px 0 #fff inset;
+        }
+        .fullscreen-btn:active { transform: scale(0.95); }
+
         .timer-grid {
-            padding: 15px;
+            padding: 10px;
             display: grid;
             grid-template-columns: 1fr;
-            gap: 15px;
+            gap: 10px;
+            flex: 1;
         }
 
         @media (min-width: 600px) or (orientation: landscape) {
@@ -78,7 +109,7 @@
             background: #fdfdfd;
             border: 2px solid #aaa;
             border-radius: 6px;
-            padding: 10px;
+            padding: 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -88,9 +119,9 @@
         .timer-card.active { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
 
         .timer-title {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: bold;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             padding: 2px 10px;
             border-radius: 10px;
             color: white;
@@ -106,9 +137,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-            margin-bottom: 10px;
+            gap: 5px;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
             width: 100%;
         }
 
@@ -118,7 +149,6 @@
             gap: 5px;
         }
 
-        /* 調整開關橫向排列 */
         .switch-row {
             display: flex;
             gap: 5px;
@@ -127,31 +157,31 @@
         }
 
         .voice-switch, .restart-switch {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #555;
             display: flex;
             align-items: center;
-            gap: 3px;
+            gap: 2px;
             cursor: pointer;
             background: #eee;
-            padding: 2px 8px;
-            border-radius: 12px;
+            padding: 2px 6px;
+            border-radius: 10px;
             border: 1px solid #ccc;
         }
 
         .settings-area input[type="number"] {
-            width: 50px;
+            width: 45px;
             border: 1px solid #999;
             border-radius: 3px;
             text-align: center;
-            padding: 2px;
+            padding: 1px;
         }
 
         .timer-display {
-            font-size: 3.5rem;
+            font-size: 3rem;
             font-weight: 800;
             font-family: 'Arial Black', sans-serif;
-            margin: 5px 0;
+            margin: 2px 0;
             color: #333;
             transition: color 0.1s;
         }
@@ -160,19 +190,17 @@
 
         .timer-btn {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             border: 2px solid #555;
             border-radius: 5px;
             background: linear-gradient(to bottom, #eeeeee, #cccccc);
             font-weight: bold;
             cursor: pointer;
             box-shadow: inset 1px 1px 0 #fff;
-            margin-top: 10px;
         }
 
         .timer-btn:active {
             background: linear-gradient(to bottom, #bbbbbb, #dddddd);
-            box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3);
             transform: scale(0.98);
         }
 
@@ -183,8 +211,8 @@
         }
 
         .reset-btn {
-            font-size: 0.7rem;
-            padding: 2px 6px;
+            font-size: 0.65rem;
+            padding: 2px 5px;
             background: #999;
             color: white;
             border: none;
@@ -193,8 +221,8 @@
 
         .footer-hint {
             text-align: center;
-            padding: 10px;
-            font-size: 0.8rem;
+            padding: 8px;
+            font-size: 0.75rem;
             color: #555;
             background: #ddd;
         }
@@ -202,10 +230,13 @@
 </head>
 <body>
 
-    <div class="window">
+    <div class="window" id="app-window">
         <div class="window-header">
-            <span>困難拉圖斯攻略助手</span>
-            <span class="guild-tag">aespaaa 公會製作</span>
+            <div class="header-left">
+                <span>困難拉圖斯攻略助手</span>
+                <span class="guild-tag">aespaaa 公會製作</span>
+            </div>
+            <button class="fullscreen-btn" onclick="toggleFullScreen()">全螢幕模式</button>
         </div>
 
         <div class="timer-grid">
@@ -214,15 +245,11 @@
                 <div class="settings-area">
                     <div class="input-row">
                         <input type="number" id="input-mobs" value="50" min="1">s
-                        <button class="reset-btn" onclick="resetSetting('mobs', 50)">設定重置</button>
+                        <button class="reset-btn" onclick="resetSetting('mobs', 50)">重置</button>
                     </div>
                     <div class="switch-row">
-                        <label class="voice-switch">
-                            <input type="checkbox" id="voice-mobs" checked> 🔊 語音
-                        </label>
-                        <label class="restart-switch">
-                            <input type="checkbox" id="restart-mobs" checked> 🔄 循環
-                        </label>
+                        <label class="voice-switch"><input type="checkbox" id="voice-mobs" checked> 🔊 語音</label>
+                        <label class="restart-switch"><input type="checkbox" id="restart-mobs" checked> 🔄 循環</label>
                     </div>
                 </div>
                 <div id="display-mobs" class="timer-display">50.0</div>
@@ -234,15 +261,11 @@
                 <div class="settings-area">
                     <div class="input-row">
                         <input type="number" id="input-water" value="70" min="1">s
-                        <button class="reset-btn" onclick="resetSetting('water', 70)">設定重置</button>
+                        <button class="reset-btn" onclick="resetSetting('water', 70)">重置</button>
                     </div>
                     <div class="switch-row">
-                        <label class="voice-switch">
-                            <input type="checkbox" id="voice-water" checked> 🔊 語音
-                        </label>
-                        <label class="restart-switch">
-                            <input type="checkbox" id="restart-water" checked> 🔄 循環
-                        </label>
+                        <label class="voice-switch"><input type="checkbox" id="voice-water" checked> 🔊 語音</label>
+                        <label class="restart-switch"><input type="checkbox" id="restart-water" checked> 🔄 循環</label>
                     </div>
                 </div>
                 <div id="display-water" class="timer-display">70.0</div>
@@ -254,15 +277,11 @@
                 <div class="settings-area">
                     <div class="input-row">
                         <input type="number" id="input-system" value="10" min="1">s
-                        <button class="reset-btn" onclick="resetSetting('system', 10)">設定重置</button>
+                        <button class="reset-btn" onclick="resetSetting('system', 10)">重置</button>
                     </div>
                     <div class="switch-row">
-                        <label class="voice-switch">
-                            <input type="checkbox" id="voice-system" checked> 🔊 語音
-                        </label>
-                        <label class="restart-switch">
-                            <input type="checkbox" id="restart-system" checked> 🔄 循環
-                        </label>
+                        <label class="voice-switch"><input type="checkbox" id="voice-system" checked> 🔊 語音</label>
+                        <label class="restart-switch"><input type="checkbox" id="restart-system" checked> 🔄 循環</label>
                     </div>
                 </div>
                 <div id="display-system" class="timer-display">10.0</div>
@@ -271,7 +290,7 @@
         </div>
 
         <div class="footer-hint">
-            💡 單擊：開始/暫停 | <b>快速雙擊：重置計時</b><br>
+            💡 單擊：開始/暫停 | <b>雙擊：重置計時</b></b><br>
             手機使用者請注意：本工具已優化避免雙擊縮放
         </div>
     </div>
@@ -285,11 +304,27 @@
 
         let voiceUnlocked = false;
 
-        function handleTimer(id) {
-            if (!voiceUnlocked) {
-                unlockVoice();
+        // 全螢幕切換邏輯
+        function toggleFullScreen() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                const docElm = document.documentElement;
+                if (docElm.requestFullscreen) {
+                    docElm.requestFullscreen();
+                } else if (docElm.webkitRequestFullscreen) {
+                    docElm.webkitRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
             }
-            
+        }
+
+        function handleTimer(id) {
+            if (!voiceUnlocked) unlockVoice();
+
             const now = Date.now();
             const timer = timers[id];
             const inputVal = parseFloat(document.getElementById(`input-${id}`).value) || 10;
@@ -301,11 +336,8 @@
             }
             timer.lastClick = now;
 
-            if (timer.running) {
-                pauseTimer(id);
-            } else {
-                startTimer(id);
-            }
+            if (timer.running) pauseTimer(id);
+            else startTimer(id);
         }
 
         function unlockVoice() {
@@ -330,8 +362,6 @@
 
             timer.interval = setInterval(() => {
                 timer.timeLeft -= 0.1;
-
-                // 改為取得個別計時器的循環開關狀態
                 const autoRestart = document.getElementById(`restart-${id}`).checked;
                 const isVoiceEnabled = document.getElementById(`voice-${id}`).checked;
 
@@ -341,19 +371,15 @@
                         else if (id == "water") speak("黑水");
                         else if (id == "system") speak("系統扣時");
                     }
-
                     if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-
                     if (autoRestart) {
-                        const inputVal = parseFloat(document.getElementById(`input-${id}`).value);
-                        timer.timeLeft = inputVal;
+                        timer.timeLeft = parseFloat(document.getElementById(`input-${id}`).value);
                     } else {
                         timer.timeLeft = 0;
                         pauseTimer(id);
                         btn.innerText = "已完成 (雙擊重置)";
                     }
                 }
-
                 display.innerText = Math.max(0, timer.timeLeft).toFixed(1);
             }, 100);
         }
@@ -363,7 +389,6 @@
             const btn = document.getElementById(`btn-${id}`);
             const display = document.getElementById(`display-${id}`);
             const card = document.getElementById(`card-${id}`);
-
             clearInterval(timer.interval);
             timer.running = false;
             btn.classList.remove('is-running');
@@ -377,11 +402,9 @@
             const btn = document.getElementById(`btn-${id}`);
             const display = document.getElementById(`display-${id}`);
             const card = document.getElementById(`card-${id}`);
-
             clearInterval(timer.interval);
             timer.running = false;
             timer.timeLeft = duration;
-
             display.innerText = duration.toFixed(1);
             display.classList.remove('running-text');
             btn.innerText = "開始倒數";
