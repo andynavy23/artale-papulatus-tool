@@ -333,7 +333,7 @@
 
     async function initCapture() { try { video.srcObject = await navigator.mediaDevices.getDisplayMedia({ video: true }); analyzeLoop(); } catch (e) { addLog("系統：連結視窗取消。"); } }
     async function processHpOCR() { isHpBusy = true; try { const { data: { text } } = await hpWorker.recognize(hpDbg); const m = text.match(/(\d+)%/); if (m && !isManualHP) updateHPUI(m[1]); } catch(e){} isHpBusy = false; }
-    async function processCrackOCR() { isCrackBusy = true; try { const { data: { text } } = await crackWorker.recognize(crackDbg); const r = text.trim(); if (r) { document.getElementById('ocr-crack-raw').innerText = r; if (["watch", "step", "腳下"].some(k => r.toLowerCase().includes(k))) triggerCrack("自動", false); } } catch(e){} isCrackBusy = false; }
+    async function processCrackOCR() { isCrackBusy = true; try { const { data: { text } } = await crackWorker.recognize(crackDbg); const r = text.trim(); if (r) { document.getElementById('ocr-crack-raw').innerText = r; if (["watch", "step", "腳下"].some(k => r.toLowerCase().includes(k))) triggerCrack("自動", false); speak("注意黑水"); } } catch(e){} isCrackBusy = false; }
     function triggerCrack(src, f) { const now = Date.now(); if (!f && (now - lastCrackTrigger < 15000)) return; lastCrackTrigger = now; clearInterval(crackItv); let s = parseInt(document.getElementById('crack-duration').value); const el = document.getElementById('crack-timer'); el.style.color = "#fa5252"; crackItv = setInterval(() => { s--; el.innerText = s + "s"; if (s<=0) { clearInterval(crackItv); el.innerText = "READY"; el.style.color = "#40c057"; speak("注意黑水"); } }, 1000); }
     function resetCrackTimer() { clearInterval(crackItv); document.getElementById('crack-timer').innerText = "READY"; document.getElementById('crack-timer').style.color = "#40c057"; }
     function updateHPUI(p) { document.getElementById('hp-display').innerText = p + "%"; checkHPLogic(p); }
@@ -361,7 +361,16 @@
     }
     function clearSettings() { localStorage.removeItem('artale_v8_config'); config = JSON.parse(JSON.stringify(DEFAULT_CONFIG)); applyUI(); addLog("系統：設定已恢復預設。"); }
     function addLog(m) { const l = document.getElementById('sys-log'); l.innerHTML += `<br>[${new Date().toLocaleTimeString()}] ${m}`; l.scrollTop = l.scrollHeight; }
-    function speak(t) { window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(t)); }
+    function speak(text) {
+        if (!('speechSynthesis' in window)) return;
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'zh-TW';
+        utterance.pitch = 1;
+        utterance.rate = 1.2;
+        utterance.volume = 1;
+        setTimeout(() => {window.speechSynthesis.speak(utterance);}, 0);
+    }
 </script>
 </body>
 </html>
