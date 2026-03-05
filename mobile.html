@@ -20,7 +20,6 @@
             --color-system: #a362cc;
         }
 
-        /* 防止手機雙擊縮放與意外滾動 */
         * {
             touch-action: manipulation;
             box-sizing: border-box;
@@ -37,13 +36,8 @@
             align-items: center;
             color: #333;
             min-height: 100vh;
-            /* 防止下拉重新整理 */
             overscroll-behavior: contain;
         }
-
-        /* 全螢幕狀態下的特殊樣式 */
-        :fullscreen body { padding: 5px; }
-        :-webkit-full-screen body { padding: 5px; }
 
         .window {
             background: var(--ms-window-bg);
@@ -68,30 +62,16 @@
             border-bottom: 2px solid var(--ms-border);
         }
 
-        .header-left {
-            display: flex;
-            flex-direction: column;
-        }
+        .header-left { display: flex; flex-direction: column; }
+        .guild-tag { font-family: 'ZCOOL KuaiLe', cursive; font-size: 0.8rem; color: #ffcc00; }
 
-        .guild-tag {
-            font-family: 'ZCOOL KuaiLe', cursive;
-            font-size: 0.8rem;
-            color: #ffcc00;
+        .header-btns { display: flex; gap: 5px; }
+        .fullscreen-btn, .ui-toggle-btn {
+            background: #ffcc00; color: #333; border: 1px solid #333;
+            border-radius: 4px; padding: 4px 8px; font-size: 0.75rem;
+            font-weight: bold; cursor: pointer; box-shadow: 1px 1px 0 #fff inset;
         }
-
-        /* 全螢幕按鈕樣式 */
-        .fullscreen-btn {
-            background: #ffcc00;
-            color: #333;
-            border: 1px solid #333;
-            border-radius: 4px;
-            padding: 4px 8px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 1px 1px 0 #fff inset;
-        }
-        .fullscreen-btn:active { transform: scale(0.95); }
+        .ui-toggle-btn { background: #fff; }
 
         .timer-grid {
             padding: 10px;
@@ -101,8 +81,11 @@
             flex: 1;
         }
 
+        /* 關鍵：使用 auto-fit 讓剩餘卡片自動填滿寬度 */
         @media (min-width: 600px) or (orientation: landscape) {
-            .timer-grid { grid-template-columns: 1fr 1fr 1fr; }
+            .timer-grid { 
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            }
         }
 
         .timer-card {
@@ -114,6 +97,12 @@
             flex-direction: column;
             align-items: center;
             transition: all 0.2s;
+            min-height: 180px;
+        }
+
+        /* 當卡片被標記為 hidden 時完全消失，讓 Grid 重新計算版面 */
+        .timer-card.card-hidden {
+            display: none !important;
         }
 
         .timer-card.active { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
@@ -127,105 +116,72 @@
             color: white;
             width: 100%;
             text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+
+        .hide-eye {
+            cursor: pointer;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            padding: 0 5px;
+        }
+        .hide-eye:hover { opacity: 1; }
 
         .bg-mobs { background-color: var(--color-mobs); }
         .bg-water { background-color: var(--color-water); }
         .bg-system { background-color: var(--color-system); }
 
         .settings-area {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.8rem;
-            margin-bottom: 5px;
-            width: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            gap: 5px; font-size: 0.8rem; margin-bottom: 5px; width: 100%;
         }
 
-        .input-row {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .switch-row {
-            display: flex;
-            gap: 5px;
-            justify-content: center;
-            width: 100%;
-        }
+        .input-row { display: flex; align-items: center; gap: 5px; }
+        .switch-row { display: flex; gap: 5px; justify-content: center; width: 100%; }
 
         .voice-switch, .restart-switch {
-            font-size: 0.75rem;
-            color: #555;
-            display: flex;
-            align-items: center;
-            gap: 2px;
-            cursor: pointer;
-            background: #eee;
-            padding: 2px 6px;
-            border-radius: 10px;
-            border: 1px solid #ccc;
+            font-size: 0.75rem; color: #555; display: flex;
+            align-items: center; gap: 2px; cursor: pointer;
+            background: #eee; padding: 2px 6px; border-radius: 10px; border: 1px solid #ccc;
         }
 
         .settings-area input[type="number"] {
-            width: 45px;
-            border: 1px solid #999;
-            border-radius: 3px;
-            text-align: center;
-            padding: 1px;
+            width: 45px; border: 1px solid #999; border-radius: 3px;
+            text-align: center; padding: 1px;
         }
 
         .timer-display {
-            font-size: 3rem;
-            font-weight: 800;
-            font-family: 'Arial Black', sans-serif;
-            margin: 2px 0;
-            color: #333;
-            transition: color 0.1s;
+            font-size: 3rem; font-weight: 800; font-family: 'Arial Black', sans-serif;
+            margin: 2px 0; color: #333; transition: all 0.3s ease;
+            flex: 1; display: flex; align-items: center; justify-content: center;
         }
 
         .running-text { color: #d00; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
 
         .timer-btn {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #555;
-            border-radius: 5px;
-            background: linear-gradient(to bottom, #eeeeee, #cccccc);
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: inset 1px 1px 0 #fff;
+            width: 100%; padding: 10px; border: 2px solid #555;
+            border-radius: 5px; background: linear-gradient(to bottom, #eeeeee, #cccccc);
+            font-weight: bold; cursor: pointer; box-shadow: inset 1px 1px 0 #fff;
         }
 
-        .timer-btn:active {
-            background: linear-gradient(to bottom, #bbbbbb, #dddddd);
-            transform: scale(0.98);
-        }
+        .timer-btn.is-running { background: linear-gradient(to bottom, #ff9999, #ff5555); color: white; border-color: #800; }
 
-        .timer-btn.is-running {
-            background: linear-gradient(to bottom, #ff9999, #ff5555);
-            color: white;
-            border-color: #800;
-        }
+        .reset-btn { font-size: 0.65rem; padding: 2px 5px; background: #999; color: white; border: none; border-radius: 3px; }
 
-        .reset-btn {
-            font-size: 0.65rem;
-            padding: 2px 5px;
-            background: #999;
-            color: white;
-            border: none;
-            border-radius: 3px;
-        }
+        .footer-hint { text-align: center; padding: 8px; font-size: 0.75rem; color: #555; background: #ddd; }
 
-        .footer-hint {
-            text-align: center;
-            padding: 8px;
-            font-size: 0.75rem;
-            color: #555;
-            background: #ddd;
+        /* 恢復按鈕區域（隱藏後顯示） */
+        .restore-bar {
+            padding: 5px; background: #ccc; width: 100%; display: flex; 
+            justify-content: center; gap: 10px; font-size: 0.75rem;
         }
+        .restore-btn { cursor: pointer; text-decoration: underline; color: #333; }
+
+        /* 精簡模式樣式 */
+        .ui-hidden .settings-area, .ui-hidden .timer-btn { display: none; }
+        .ui-hidden .timer-display { font-size: 5rem; width: 100%; }
     </style>
 </head>
 <body>
@@ -236,12 +192,25 @@
                 <span>困難拉圖斯攻略助手</span>
                 <span class="guild-tag">aespaaa 公會製作</span>
             </div>
-            <button class="fullscreen-btn" onclick="toggleFullScreen()">全螢幕模式</button>
+            <div class="header-btns">
+                <button class="ui-toggle-btn" onclick="toggleUI()">精簡模式</button>
+                <button class="fullscreen-btn" onclick="toggleFullScreen()">全螢幕</button>
+            </div>
         </div>
 
-        <div class="timer-grid">
+        <div class="restore-bar" id="restore-bar" style="display:none;">
+            <span>顯示隱藏項目：</span>
+            <span class="restore-btn" onclick="toggleCard('mobs', true)">小怪</span>
+            <span class="restore-btn" onclick="toggleCard('water', true)">黑水</span>
+            <span class="restore-btn" onclick="toggleCard('system', true)">系統</span>
+        </div>
+
+        <div class="timer-grid" id="main-grid">
             <div class="timer-card" id="card-mobs">
-                <div class="timer-title bg-mobs">召喚小怪 (屋頂)</div>
+                <div class="timer-title bg-mobs">
+                    <span>召喚小怪 (屋頂)</span>
+                    <span class="hide-eye" onclick="toggleCard('mobs', false)">👁️</span>
+                </div>
                 <div class="settings-area">
                     <div class="input-row">
                         <input type="number" id="input-mobs" value="50" min="1">s
@@ -252,12 +221,15 @@
                         <label class="restart-switch"><input type="checkbox" id="restart-mobs" checked> 🔄 循環</label>
                     </div>
                 </div>
-                <div id="display-mobs" class="timer-display">50.0</div>
+                <div id="display-mobs" class="timer-display" onclick="handleDisplayClick('mobs')">50.0</div>
                 <button class="timer-btn" id="btn-mobs" onclick="handleTimer('mobs')">開始倒數</button>
             </div>
 
             <div class="timer-card" id="card-water">
-                <div class="timer-title bg-water">黑水生成 (即死)</div>
+                <div class="timer-title bg-water">
+                    <span>黑水生成 (即死)</span>
+                    <span class="hide-eye" onclick="toggleCard('water', false)">👁️</span>
+                </div>
                 <div class="settings-area">
                     <div class="input-row">
                         <input type="number" id="input-water" value="70" min="1">s
@@ -268,12 +240,15 @@
                         <label class="restart-switch"><input type="checkbox" id="restart-water" checked> 🔄 循環</label>
                     </div>
                 </div>
-                <div id="display-water" class="timer-display">70.0</div>
+                <div id="display-water" class="timer-display" onclick="handleDisplayClick('water')">70.0</div>
                 <button class="timer-btn" id="btn-water" onclick="handleTimer('water')">開始倒數</button>
             </div>
 
             <div class="timer-card" id="card-system">
-                <div class="timer-title bg-system">系統扣時 (指針)</div>
+                <div class="timer-title bg-system">
+                    <span>系統扣時 (指針)</span>
+                    <span class="hide-eye" onclick="toggleCard('system', false)">👁️</span>
+                </div>
                 <div class="settings-area">
                     <div class="input-row">
                         <input type="number" id="input-system" value="10" min="1">s
@@ -284,13 +259,13 @@
                         <label class="restart-switch"><input type="checkbox" id="restart-system" checked> 🔄 循環</label>
                     </div>
                 </div>
-                <div id="display-system" class="timer-display">10.0</div>
+                <div id="display-system" class="timer-display" onclick="handleDisplayClick('system')">10.0</div>
                 <button class="timer-btn" id="btn-system" onclick="handleTimer('system')">開始倒數</button>
             </div>
         </div>
 
         <div class="footer-hint">
-            💡 單擊：開始/暫停 | <b>雙擊：重置計時</b> (已優化避免雙擊縮放)<br>
+            💡 點擊標題 <b>👁️</b> 可隱藏該計時器 | <b>雙擊：重置計時</b> (已優化避免雙擊縮放)<br>
             iOS 使用者請注意：全螢幕模式不支援，請使用「分享 -> 加入主畫面」
         </div>
     </div>
@@ -301,41 +276,50 @@
             water: { timeLeft: 70, interval: null, running: false, lastClick: 0 },
             system: { timeLeft: 10, interval: null, running: false, lastClick: 0 }
         };
-
         let voiceUnlocked = false;
 
-        // 全螢幕切換邏輯
+        // 新增：個別切換卡片顯示/隱藏
+        function toggleCard(id, show) {
+            const card = document.getElementById(`card-${id}`);
+            if (show) card.classList.remove('card-hidden');
+            else card.classList.add('card-hidden');
+            
+            // 檢查是否需要顯示復原列
+            const hiddenCards = document.querySelectorAll('.card-hidden');
+            document.getElementById('restore-bar').style.display = hiddenCards.length > 0 ? 'flex' : 'none';
+        }
+
+        function toggleUI() {
+            const grid = document.getElementById('main-grid');
+            const btn = document.querySelector('.ui-toggle-btn');
+            grid.classList.toggle('ui-hidden');
+            btn.innerText = grid.classList.contains('ui-hidden') ? "完整模式" : "精簡模式";
+        }
+
+        function handleDisplayClick(id) { handleTimer(id); }
+
         function toggleFullScreen() {
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
                 const docElm = document.documentElement;
-                if (docElm.requestFullscreen) {
-                    docElm.requestFullscreen();
-                } else if (docElm.webkitRequestFullscreen) {
-                    docElm.webkitRequestFullscreen();
-                }
+                if (docElm.requestFullscreen) docElm.requestFullscreen();
+                else if (docElm.webkitRequestFullscreen) docElm.webkitRequestFullscreen();
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                }
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
             }
         }
 
         function handleTimer(id) {
             if (!voiceUnlocked) unlockVoice();
-
             const now = Date.now();
             const timer = timers[id];
             const inputVal = parseFloat(document.getElementById(`input-${id}`).value) || 10;
-
             if (now - timer.lastClick < 500) {
                 resetTimer(id, inputVal);
                 timer.lastClick = 0;
                 return;
             }
             timer.lastClick = now;
-
             if (timer.running) pauseTimer(id);
             else startTimer(id);
         }
@@ -353,7 +337,6 @@
             const btn = document.getElementById(`btn-${id}`);
             const display = document.getElementById(`display-${id}`);
             const card = document.getElementById(`card-${id}`);
-
             timer.running = true;
             btn.classList.add('is-running');
             btn.innerText = "倒數中 (暫停)";
@@ -364,6 +347,7 @@
                 timer.timeLeft -= 0.1;
                 const autoRestart = document.getElementById(`restart-${id}`).checked;
                 const isVoiceEnabled = document.getElementById(`voice-${id}`).checked;
+                const inputVal = parseFloat(document.getElementById(`input-${id}`).value);
 
                 if (timer.timeLeft <= 0) {
                     if (isVoiceEnabled) {
@@ -372,12 +356,13 @@
                         else if (id == "system") speak("系統扣時");
                     }
                     if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                    
                     if (autoRestart) {
-                        timer.timeLeft = parseFloat(document.getElementById(`input-${id}`).value);
+                        timer.timeLeft = inputVal;
                     } else {
-                        timer.timeLeft = 0;
                         pauseTimer(id);
-                        btn.innerText = "已完成 (雙擊重置)";
+                        timer.timeLeft = inputVal; // 需求1: 自動恢復秒數
+                        btn.innerText = "開始倒數";
                     }
                 }
                 display.innerText = Math.max(0, timer.timeLeft).toFixed(1);
@@ -422,9 +407,7 @@
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'zh-TW';
-            utterance.pitch = 1;
-            utterance.rate = 1.2;
-            utterance.volume = 1;
+            utterance.pitch = 1; utterance.rate = 1.2; utterance.volume = 1;
             setTimeout(() => {window.speechSynthesis.speak(utterance);}, 0);
         }
     </script>
