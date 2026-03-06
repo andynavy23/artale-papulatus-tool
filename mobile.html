@@ -81,10 +81,10 @@
             flex: 1;
         }
 
-        /* 關鍵：使用 auto-fit 讓剩餘卡片自動填滿寬度 */
+        /* 修改：手機橫放或寬螢幕時，固定為三欄並列不換行 */
         @media (min-width: 600px) or (orientation: landscape) {
             .timer-grid { 
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+                grid-template-columns: repeat(3, 1fr); 
             }
         }
 
@@ -100,7 +100,6 @@
             min-height: 180px;
         }
 
-        /* 當卡片被標記為 hidden 時完全消失，讓 Grid 重新計算版面 */
         .timer-card.card-hidden {
             display: none !important;
         }
@@ -139,9 +138,9 @@
         }
 
         .input-row { display: flex; align-items: center; gap: 5px; }
-        .switch-row { display: flex; gap: 5px; justify-content: center; width: 100%; }
+        .switch-row { display: flex; gap: 5px; justify-content: center; width: 100%; flex-wrap: wrap; }
 
-        .voice-switch, .restart-switch {
+        .voice-switch, .restart-switch, .quick-restart-switch {
             font-size: 0.75rem; color: #555; display: flex;
             align-items: center; gap: 2px; cursor: pointer;
             background: #eee; padding: 2px 6px; border-radius: 10px; border: 1px solid #ccc;
@@ -172,14 +171,12 @@
 
         .footer-hint { text-align: center; padding: 8px; font-size: 0.75rem; color: #555; background: #ddd; }
 
-        /* 恢復按鈕區域（隱藏後顯示） */
         .restore-bar {
             padding: 5px; background: #ccc; width: 100%; display: flex; 
             justify-content: center; gap: 10px; font-size: 0.75rem;
         }
         .restore-btn { cursor: pointer; text-decoration: underline; color: #333; }
 
-        /* 精簡模式樣式 */
         .ui-hidden .settings-area, .ui-hidden .timer-btn { display: none; }
         .ui-hidden .timer-display { font-size: 5rem; width: 100%; }
     </style>
@@ -219,6 +216,7 @@
                     <div class="switch-row">
                         <label class="voice-switch"><input type="checkbox" id="voice-mobs" checked> 🔊 語音</label>
                         <label class="restart-switch"><input type="checkbox" id="restart-mobs" checked> 🔄 循環</label>
+                        <label class="quick-restart-switch"><input type="checkbox" id="quick-mobs"> ⚡ 快速</label>
                     </div>
                 </div>
                 <div id="display-mobs" class="timer-display" onclick="handleDisplayClick('mobs')">50.0</div>
@@ -238,6 +236,7 @@
                     <div class="switch-row">
                         <label class="voice-switch"><input type="checkbox" id="voice-water" checked> 🔊 語音</label>
                         <label class="restart-switch"><input type="checkbox" id="restart-water" checked> 🔄 循環</label>
+                        <label class="quick-restart-switch"><input type="checkbox" id="quick-water"> ⚡ 快速</label>
                     </div>
                 </div>
                 <div id="display-water" class="timer-display" onclick="handleDisplayClick('water')">70.0</div>
@@ -257,6 +256,7 @@
                     <div class="switch-row">
                         <label class="voice-switch"><input type="checkbox" id="voice-system" checked> 🔊 語音</label>
                         <label class="restart-switch"><input type="checkbox" id="restart-system" checked> 🔄 循環</label>
+                        <label class="quick-restart-switch"><input type="checkbox" id="quick-system"> ⚡ 快速</label>
                     </div>
                 </div>
                 <div id="display-system" class="timer-display" onclick="handleDisplayClick('system')">10.0</div>
@@ -265,7 +265,7 @@
         </div>
 
         <div class="footer-hint">
-            💡 點擊標題 <b>👁️</b> 可隱藏該計時器 | <b>雙擊：重置計時</b> (已優化避免雙擊縮放)<br>
+            💡 點擊標題 <b>👁️</b> 可隱藏該計時器 | <b>⚡ 快速</b> 勾選時單擊直接重新倒數 | <b>雙擊：重置並暫停計時</b><br>
             iOS 使用者請注意：全螢幕模式不支援，請使用「分享 -> 加入主畫面」
         </div>
     </div>
@@ -278,13 +278,10 @@
         };
         let voiceUnlocked = false;
 
-        // 新增：個別切換卡片顯示/隱藏
         function toggleCard(id, show) {
             const card = document.getElementById(`card-${id}`);
             if (show) card.classList.remove('card-hidden');
             else card.classList.add('card-hidden');
-            
-            // 檢查是否需要顯示復原列
             const hiddenCards = document.querySelectorAll('.card-hidden');
             document.getElementById('restore-bar').style.display = hiddenCards.length > 0 ? 'flex' : 'none';
         }
@@ -314,12 +311,24 @@
             const now = Date.now();
             const timer = timers[id];
             const inputVal = parseFloat(document.getElementById(`input-${id}`).value) || 10;
+            const quickRestart = document.getElementById(`quick-${id}`).checked;
+
+            // 雙擊：重置並暫停
             if (now - timer.lastClick < 500) {
                 resetTimer(id, inputVal);
                 timer.lastClick = 0;
                 return;
             }
             timer.lastClick = now;
+
+            // 勾選快速重啟：單擊直接重置秒數並開始
+            if (quickRestart) {
+                resetTimer(id, inputVal);
+                startTimer(id);
+                return;
+            }
+
+            // 一般模式：切換開始/暫停
             if (timer.running) pauseTimer(id);
             else startTimer(id);
         }
@@ -337,6 +346,10 @@
             const btn = document.getElementById(`btn-${id}`);
             const display = document.getElementById(`display-${id}`);
             const card = document.getElementById(`card-${id}`);
+            
+            // 避免重複啟動 interval
+            if (timer.interval) clearInterval(timer.interval);
+
             timer.running = true;
             btn.classList.add('is-running');
             btn.innerText = "倒數中 (暫停)";
@@ -361,7 +374,7 @@
                         timer.timeLeft = inputVal;
                     } else {
                         pauseTimer(id);
-                        timer.timeLeft = inputVal; // 需求1: 自動恢復秒數
+                        timer.timeLeft = inputVal;
                         btn.innerText = "開始倒數";
                     }
                 }
@@ -374,7 +387,8 @@
             const btn = document.getElementById(`btn-${id}`);
             const display = document.getElementById(`display-${id}`);
             const card = document.getElementById(`card-${id}`);
-            clearInterval(timer.interval);
+            if (timer.interval) clearInterval(timer.interval);
+            timer.interval = null;
             timer.running = false;
             btn.classList.remove('is-running');
             btn.innerText = "繼續倒數";
@@ -387,7 +401,8 @@
             const btn = document.getElementById(`btn-${id}`);
             const display = document.getElementById(`display-${id}`);
             const card = document.getElementById(`card-${id}`);
-            clearInterval(timer.interval);
+            if (timer.interval) clearInterval(timer.interval);
+            timer.interval = null;
             timer.running = false;
             timer.timeLeft = duration;
             display.innerText = duration.toFixed(1);
